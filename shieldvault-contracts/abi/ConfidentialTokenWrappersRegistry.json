@@ -1,0 +1,123 @@
+[
+  {
+    "type": "function",
+    "name": "getConfidentialTokenAddress",
+    "inputs": [{ "name": "erc20TokenAddress", "type": "address" }],
+    "outputs": [
+      { "name": "isValid", "type": "bool" },
+      { "name": "confidentialToken", "type": "address" }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getTokenAddress",
+    "inputs": [{ "name": "confidentialWrapperAddress", "type": "address" }],
+    "outputs": [
+      { "name": "isValid", "type": "bool" },
+      { "name": "token", "type": "address" }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "isConfidentialTokenValid",
+    "inputs": [{ "name": "confidentialWrapperAddress", "type": "address" }],
+    "outputs": [{ "name": "", "type": "bool" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getTokenConfidentialTokenPairs",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "tuple[]",
+        "components": [
+          { "name": "tokenAddress", "type": "address" },
+          { "name": "confidentialTokenAddress", "type": "address" },
+          { "name": "isValid", "type": "bool" }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getTokenConfidentialTokenPairsLength",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getTokenConfidentialTokenPair",
+    "inputs": [{ "name": "index", "type": "uint256" }],
+    "outputs": [
+      {
+        "name": "",
+        "type": "tuple",
+        "components": [
+          { "name": "tokenAddress", "type": "address" },
+          { "name": "confidentialTokenAddress", "type": "address" },
+          { "name": "isValid", "type": "bool" }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getTokenConfidentialTokenPairsSlice",
+    "inputs": [
+      { "name": "fromIndex", "type": "uint256" },
+      { "name": "toIndex", "type": "uint256" }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "tuple[]",
+        "components": [
+          { "name": "tokenAddress", "type": "address" },
+          { "name": "confidentialTokenAddress", "type": "address" },
+          { "name": "isValid", "type": "bool" }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getTokenIndex",
+    "inputs": [{ "name": "tokenAddress", "type": "address" }],
+    "outputs": [{ "name": "", "type": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "event",
+    "name": "ConfidentialTokenRegistered",
+    "inputs": [
+      { "indexed": true, "name": "tokenAddress", "type": "address" },
+      { "indexed": true, "name": "confidentialTokenAddress", "type": "address" }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "ConfidentialTokenRevoked",
+    "inputs": [
+      { "indexed": true, "name": "tokenAddress", "type": "address" },
+      { "indexed": true, "name": "confidentialTokenAddress", "type": "address" }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "TokenNotRegistered",
+    "inputs": [{ "name": "tokenAddress", "type": "address" }]
+  },
+  {
+    "type": "error",
+    "name": "RevokedConfidentialToken",
+    "inputs": [{ "name": "confidentialTokenAddress", "type": "address" }]
+  }
+]
