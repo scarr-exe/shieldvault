@@ -1,0 +1,101 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg-base:       #07090D;
+  --bg-surface:    #0D1017;
+  --bg-elevated:   #131720;
+  --bg-hover:      #181E2A;
+  --border:        #1C2235;
+  --border-strong: #252D40;
+  --text-primary:  #E8ECF4;
+  --text-secondary:#8892A4;
+  --text-muted:    #4A5568;
+  --amber:         #F59E0B;
+  --amber-dim:     #92610A;
+  --amber-glow:    rgba(245,158,11,0.12);
+  --amber-border:  rgba(245,158,11,0.3);
+  --green:         #10B981;
+  --green-glow:    rgba(16,185,129,0.12);
+  --green-border:  rgba(16,185,129,0.3);
+  --red:           #EF4444;
+  --red-glow:      rgba(239,68,68,0.12);
+  --red-border:    rgba(239,68,68,0.3);
+  --blue:          #3B82F6;
+  --font-display:  'Syne', sans-serif;
+  --font-mono:     'Fragment Mono', monospace;
+  --radius:        3px;
+}
+
+html, body, #root {
+  height: 100%;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: var(--bg-base); }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* Selection */
+::selection { background: var(--amber-glow); color: var(--amber); }
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease forwards;
+}
+.animate-spin {
+  animation: spin 0.8s linear infinite;
+}
+
+/* Noise overlay on bg */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.4;
+}
+
+/* Grid line background */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.3;
+}
+
+#root { position: relative; z-index: 1; }
