@@ -2,6 +2,14 @@ import { useState } from "react";
 import { useReadContract, useWriteContract, useAccount, useWaitForTransactionReceipt } from "wagmi";
 import { ADDRESSES, VAULT_ABI } from "../config/contracts";
 import { Card, Button, Input, Badge, Addr, Modal, Empty, useToast } from "../components/ui";
+import { useRefreshOnTx } from "../hooks/useRefreshOnTx";
+
+function cleanError(msg: string): string {
+  if (msg.includes("User rejected") || msg.includes("user rejected")) return "Transaction cancelled";
+  if (msg.includes("insufficient funds")) return "Insufficient ETH for gas";
+  if (msg.includes("execution reverted")) return "Transaction failed — check your balance";
+  return "Something went wrong — try again";
+}
 
 export function ContributorsPage() {
   const { address } = useAccount();
@@ -18,8 +26,10 @@ export function ContributorsPage() {
   const isAdmin = address?.toLowerCase() === admin?.toLowerCase();
 
   const { writeContract, data: txHash, isPending } = useWriteContract();
-  const { isLoading: txLoading } = useWaitForTransactionReceipt({ hash: txHash });
+  const { isLoading: txLoading, isSuccess: txSuccess } = useWaitForTransactionReceipt({ hash: txHash });
+  useRefreshOnTx(txSuccess);
   const isSubmitting = isPending || txLoading;
+
 
   const validateAddr = (val: string) => {
     if (!val.startsWith("0x") || val.length !== 42) return "Invalid Ethereum address";
@@ -44,7 +54,7 @@ export function ContributorsPage() {
         setNewLabel("");
         setTimeout(() => refetch(), 2000);
       },
-      onError: (e) => show(e.message.slice(0, 80), "error"),
+      onError: (e) => show(cleanError(e.message), "error"),
     });
   };
 
@@ -60,9 +70,11 @@ export function ContributorsPage() {
         show("Contributor removed", "success");
         setTimeout(() => refetch(), 2000);
       },
-      onError: (e) => show(e.message.slice(0, 80), "error"),
+      onError: (e) => show(cleanError(e.message), "error"),
     });
   };
+
+
 
   return (
     <div style={{ maxWidth: "700px" }}>

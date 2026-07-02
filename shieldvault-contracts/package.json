@@ -21,6 +21,7 @@
     "@fhevm/solidity": "^0.7.0",
     "@openzeppelin/contracts": "^5.1.0",
     "@openzeppelin/contracts-upgradeable": "^5.1.0",
+    "@zama-fhe/sdk": "^3.0.1",
     "dotenv": "^17.4.2"
   }
 }

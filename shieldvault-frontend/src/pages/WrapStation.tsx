@@ -3,6 +3,14 @@ import { useReadContract, useWriteContract, useAccount, useWaitForTransactionRec
 import { parseUnits, formatUnits } from "viem";
 import { ADDRESSES, VAULT_ABI, REGISTRY_ABI, ERC20_LABELS, TOKEN_LABELS, ERC20_ABI } from "../config/contracts";
 import { Card, Button, Input, Badge, Addr, useToast } from "../components/ui";
+import { useRefreshOnTx } from "../hooks/useRefreshOnTx";
+
+function cleanError(msg: string): string {
+  if (msg.includes("User rejected") || msg.includes("user rejected")) return "Transaction cancelled";
+  if (msg.includes("insufficient funds")) return "Insufficient ETH for gas";
+  if (msg.includes("execution reverted")) return "Transaction failed — check your balance";
+  return "Something went wrong — try again";
+}
 
 export function WrapStationPage() {
   const { address } = useAccount();
@@ -53,8 +61,11 @@ export function WrapStationPage() {
 
   // Actions
   const { writeContract, data: txHash, isPending } = useWriteContract();
-  const { isLoading: txLoading } = useWaitForTransactionReceipt({ hash: txHash });
-  const isSubmitting = isPending || txLoading;
+  const { isLoading: txLoading, isSuccess: txSuccess } = useWaitForTransactionReceipt({ hash: txHash });
+  useRefreshOnTx(txSuccess);
+  const [approving, setApproving] = useState(false);
+  const [depositing, setDepositing] = useState(false);
+  const [wrapping, setWrapping] = useState(false);
 
   const parsedAmount = amount && tokenMeta
     ? parseUnits(amount, tokenMeta.decimals)
@@ -63,39 +74,41 @@ export function WrapStationPage() {
   const needsApproval = allowance !== undefined && parsedAmount > 0n && allowance < parsedAmount;
 
   const handleApprove = () => {
+    setApproving(true);
     writeContract({
       address: tokenInput as `0x${string}`,
       abi: ERC20_ABI,
       functionName: "approve",
       args: [ADDRESSES.vault, parsedAmount],
     }, {
-      onSuccess: () => show("Approval submitted — waiting for confirmation", "info"),
-      onError: (e) => show(e.message.slice(0, 80), "error"),
+      onSuccess: () => { show("Approval submitted", "info"); setApproving(false); },
+      onError: (e) => { show(cleanError(e.message), "error"); setApproving(false); },
     });
   };
 
   const handleDeposit = () => {
+    setDepositing(true);
     writeContract({
       address: ADDRESSES.vault,
       abi: VAULT_ABI,
       functionName: "deposit",
       args: [tokenInput as `0x${string}`, parsedAmount],
     }, {
-      onSuccess: () => show("Deposit submitted", "info"),
-      onError: (e) => show(e.message.slice(0, 80), "error"),
+      onSuccess: () => { show("Deposit confirmed", "success"); setDepositing(false); },
+      onError: (e) => { show(cleanError(e.message), "error"); setDepositing(false); },
     });
   };
 
   const handleWrap = () => {
-    if (!isValid) { show("Wrapper revoked or not registered", "error"); return; }
+    setWrapping(true);
     writeContract({
       address: ADDRESSES.vault,
       abi: VAULT_ABI,
       functionName: "wrapToken",
-      args: [tokenInput as `0x${string}`, parsedAmount, ADDRESSES.vault],
+      args: [tokenInput as `0x${string}`, parsedAmount, address!],
     }, {
-      onSuccess: () => show("Wrap submitted — tokens are going confidential", "success"),
-      onError: (e) => show(e.message.slice(0, 80), "error"),
+      onSuccess: () => { show("Tokens wrapped — balance is now encrypted", "success"); setWrapping(false); },
+      onError: (e) => { show(cleanError(e.message), "error"); setWrapping(false); },
     });
   };
 
@@ -184,10 +197,21 @@ export function WrapStationPage() {
                 mode === "deposit" && userBalance !== undefined && tokenMeta
                   ? `Wallet balance: ${formatUnits(userBalance as bigint, tokenMeta.decimals)} ${tokenMeta.symbol}`
                   : mode === "wrap" && vaultBalance !== undefined && tokenMeta
-                  ? `Vault balance: ${formatUnits(vaultBalance as bigint, tokenMeta.decimals)} ${tokenMeta.symbol}`
-                  : undefined
+                    ? `Vault balance: ${formatUnits(vaultBalance as bigint, tokenMeta.decimals)} ${tokenMeta.symbol}`
+                    : undefined
               }
             />
+
+            {/* Mint button — only shown when wallet balance is 0 and token is selected */}
+            {mode === "deposit" && isAddress && userBalance === 0n && tokenMeta && (
+              <MintButton
+                tokenAddress={tokenInput as `0x${string}`}
+                symbol={tokenMeta.symbol}
+                decimals={tokenMeta.decimals}
+                onSuccess={() => show(`10,000 ${tokenMeta.symbol} minted to your wallet`, "success")}
+                onError={(e) => show(e, "error")}
+              />
+            )}
 
             {/* Action button */}
             {mode === "deposit" ? (
@@ -246,8 +270,8 @@ export function WrapStationPage() {
                   {isValid
                     ? <Badge variant="valid">✓ Registry Verified</Badge>
                     : wrapper && wrapper !== "0x0000000000000000000000000000000000000000"
-                    ? <Badge variant="revoked">✕ Revoked</Badge>
-                    : <Badge variant="revoked">✕ Not Registered</Badge>
+                      ? <Badge variant="revoked">✕ Revoked</Badge>
+                      : <Badge variant="revoked">✕ Not Registered</Badge>
                   }
                 </div>
 
@@ -302,6 +326,57 @@ export function WrapStationPage() {
           </Card>
         </div>
       </div>
+    </div>
+  );
+}
+
+function MintButton({ tokenAddress, symbol, decimals, onSuccess, onError }: {
+  tokenAddress: `0x${string}`;
+  symbol: string;
+  decimals: number;
+  onSuccess: () => void;
+  onError: (msg: string) => void;
+}) {
+  const { address } = useAccount();
+  const { writeContract, isPending, data: txHash } = useWriteContract();
+  const { isLoading: txLoading } = useWaitForTransactionReceipt({ hash: txHash });
+
+  const mintAmount = parseUnits("10000", decimals);
+
+  const handleMint = () => {
+    writeContract({
+      address: tokenAddress,
+      abi: ERC20_ABI,
+      functionName: "mint",
+      args: [address!, mintAmount],
+    }, {
+      onSuccess: () => onSuccess(),
+      onError: (e) => onError(cleanError(e.message)),
+    });
+  };
+
+  return (
+    <div style={{
+      display: "flex", alignItems: "center", justifyContent: "space-between",
+      padding: "10px 12px", borderRadius: "var(--radius)",
+      border: "1px solid var(--amber-border)", background: "var(--amber-glow)",
+    }}>
+      <div>
+        <div style={{ fontSize: "12px", fontWeight: 600, color: "var(--amber)" }}>
+          No {symbol} in wallet
+        </div>
+        <div style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "2px" }}>
+          Mint 10,000 test tokens to get started
+        </div>
+      </div>
+      <Button
+        variant="primary"
+        size="sm"
+        loading={isPending || txLoading}
+        onClick={handleMint}
+      >
+        Mint 10k {symbol}
+      </Button>
     </div>
   );
 }

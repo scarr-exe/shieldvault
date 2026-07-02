@@ -15,12 +15,12 @@ export const TOKEN_LABELS: Record<
   string,
   { symbol: string; name: string; decimals: number }
 > = {
-  "0x9b5cd13b8efb858dc25a05cf411d8056058adfff": {
+  "0x7c5bf43b851c1dff1a4fee8db225b87f2c223639": {
     symbol: "cUSDC",
     name: "Confidential USDC (Mock)",
     decimals: 6,
   },
-  "0xa7da08fafdc9097cc0e7d4f113a61e31d7e8e9b0": {
+  "0x4e7b06d78965594eb5ef5414c357ca21e1554491": {
     symbol: "cUSDT",
     name: "Confidential USDT (Mock)",
     decimals: 6,
@@ -30,27 +30,22 @@ export const TOKEN_LABELS: Record<
     name: "Confidential WETH (Mock)",
     decimals: 18,
   },
-  "0xff54739b16576fa5402f211d0b938469ab9a5f3f": {
-    symbol: "cBRON",
-    name: "Confidential BRON (Mock)",
-    decimals: 18,
-  },
   "0xaa5612fa27c927a0c7961f5aefee5ba3a0f9c891": {
     symbol: "cBRON",
     name: "Confidential BRON (Mock)",
     decimals: 18,
   },
-  "0xf021fb13ca64e5354c62c954b949a88cfdeb25e": {
+  "0x2d628d2598af4eaf94cb76a437ff86ca78ffbfb": {
     symbol: "cZAMA",
     name: "Confidential ZAMA (Mock)",
     decimals: 18,
   },
-  "0x2d628d2598af4eaf94cb76a437ff86ca78ffbfb": {
+  "0xfce5c7069c5525ef6c8c2b2e35a745ba20a2f7cc": {
     symbol: "ctGBP",
     name: "Confidential tGBP (Mock)",
     decimals: 18,
   },
-  "0x75355a85c6fb9df5f0c80ff54e8747eee9a0bf57": {
+  "0xe4cf848739845bc81dee1d5352cf3844f0a60c7": {
     symbol: "cXAUt",
     name: "Confidential XAUt (Mock)",
     decimals: 6,
@@ -61,12 +56,12 @@ export const ERC20_LABELS: Record<
   string,
   { symbol: string; name: string; decimals: number }
 > = {
-  "0x7c5bf43b851c1dff1a4fee8db225b87f2c223639": {
+  "0x9b5cd13b8efb858dc25a05cf411d8056058adfff": {
     symbol: "USDC",
     name: "USD Coin (Mock)",
     decimals: 6,
   },
-  "0x4e7b06d78965594eb5ef5414c357ca21e1554491": {
+  "0xa7da08fafdc9097cc0e7d4f113a61e31d7e8e9b0": {
     symbol: "USDT",
     name: "Tether USD (Mock)",
     decimals: 6,
@@ -76,27 +71,23 @@ export const ERC20_LABELS: Record<
     name: "Wrapped ETH (Mock)",
     decimals: 18,
   },
-  "0xaa5612fa27c927a0c7961f5aefee5ba3a0f9c891": {
+  "0xff021fb13ca64e5354c62c954b949a88cfdeb25e": {
     symbol: "BRON",
     name: "BRON (Mock)",
     decimals: 18,
   },
-  "0xf021fb13ca64e5354c62c954b949a88cfdeb25e": {
+  "0x75355a85c6fb9df5f0c80ff54e8747eee9a0bf57": {
     symbol: "ZAMA",
     name: "ZAMA (Mock)",
     decimals: 18,
   },
-  "0x2d628d2598af4eaf94cb76a437ff86ca78ffbfb": {
+  "0x93c931278a2aad1916783f952f94276ea5111442": {
     symbol: "tGBP",
     name: "tGBP (Mock)",
     decimals: 18,
   },
-  "0x75355a85c6fb9df5f0c80ff54e8747eee9a0bf57": {
-    symbol: "XAUt",
-    name: "Tether Gold (Mock)",
-    decimals: 6,
-  },
 };
+
 // ── ABIs ─────────────────────────────────────────────────────────────────────
 export const REGISTRY_ABI = [
   {
