@@ -236,6 +236,12 @@ contract ShieldVault is ReentrancyGuard {
     /// @param confidentialToken ERC-7984 wrapper to pay with
     /// @param encryptedAmount Encrypted amount handle (from Zama SDK)
     /// @param inputProof ZK proof for the encrypted amount
+    
+    /// @dev NOTE: The current frontend uses direct wallet-to-wallet confidential
+    /// transfers via the Zama SDK instead of this function. The contributor
+    /// registry serves as a UI-level reference list. payContributor() remains
+    /// available as the on-chain enforcement path for future versions where
+    /// the vault itself holds and disburses confidential token balances.
     function payContributor(
         address contributor,
         address confidentialToken,

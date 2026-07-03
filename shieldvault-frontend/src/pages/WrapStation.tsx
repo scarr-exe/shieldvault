@@ -4,6 +4,7 @@ import { parseUnits, formatUnits } from "viem";
 import { ADDRESSES, VAULT_ABI, REGISTRY_ABI, ERC20_LABELS, TOKEN_LABELS, ERC20_ABI } from "../config/contracts";
 import { Card, Button, Input, Badge, Addr, useToast } from "../components/ui";
 import { useRefreshOnTx } from "../hooks/useRefreshOnTx";
+import { RESTRICTED_MINT_TOKENS } from "../config/contracts";
 
 function cleanError(msg: string): string {
   if (msg.includes("User rejected") || msg.includes("user rejected")) return "Transaction cancelled";
@@ -99,7 +100,17 @@ export function WrapStationPage() {
     });
   };
 
+  const MAX_UINT64 = BigInt("18446744073709551615");
+
   const handleWrap = () => {
+    if (!isValid) { show("Wrapper revoked or not registered", "error"); return; }
+
+    if (parsedAmount > MAX_UINT64) {
+      const maxAmount = formatUnits(MAX_UINT64, tokenMeta?.decimals ?? 18);
+      show(`Max amount for this token is ${Number(maxAmount).toFixed(4)}`, "error");
+      return;
+    }
+
     setWrapping(true);
     writeContract({
       address: ADDRESSES.vault,
@@ -204,26 +215,39 @@ export function WrapStationPage() {
 
             {/* Mint button — only shown when wallet balance is 0 and token is selected */}
             {mode === "deposit" && isAddress && userBalance === 0n && tokenMeta && (
-              <MintButton
-                tokenAddress={tokenInput as `0x${string}`}
-                symbol={tokenMeta.symbol}
-                decimals={tokenMeta.decimals}
-                onSuccess={() => show(`10,000 ${tokenMeta.symbol} minted to your wallet`, "success")}
-                onError={(e) => show(e, "error")}
-              />
+              RESTRICTED_MINT_TOKENS.has(tokenInput.toLowerCase()) ? (
+                <div style={{
+                  padding: "10px 12px", borderRadius: "var(--radius)",
+                  border: "1px solid var(--red-border)", background: "var(--red-glow)",
+                }}>
+                  <div style={{ fontSize: "12px", fontWeight: 600, color: "var(--red)" }}>
+                    Restricted token
+                  </div>
+                  <div style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "2px" }}>
+                    This token has no public mint. You need an existing balance to deposit here.
+                  </div>
+                </div>
+              ) : (
+                <MintButton
+                  tokenAddress={tokenInput as `0x${string}`}
+                  symbol={tokenMeta.symbol}
+                  decimals={tokenMeta.decimals}
+                  onSuccess={() => show(`10,000 ${tokenMeta.symbol} minted to your wallet`, "success")}
+                  onError={(e) => show(e, "error")}
+                />
+              )
             )}
-
             {/* Action button */}
             {mode === "deposit" ? (
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                 {needsApproval && (
-                  <Button variant="secondary" loading={isSubmitting} onClick={handleApprove} style={{ width: "100%" }}>
+                  <Button variant="secondary" loading={approving} onClick={handleApprove} style={{ width: "100%" }}>
                     1. Approve
                   </Button>
                 )}
                 <Button
                   variant="primary"
-                  loading={isSubmitting}
+                  loading={depositing}
                   disabled={!amount || !isAddress || (needsApproval ?? false)}
                   onClick={handleDeposit}
                   style={{ width: "100%" }}
@@ -234,7 +258,7 @@ export function WrapStationPage() {
             ) : (
               <Button
                 variant="primary"
-                loading={isSubmitting}
+                loading={wrapping}
                 disabled={!amount || !isAddress || !isValid}
                 onClick={handleWrap}
                 style={{ width: "100%" }}

@@ -11,6 +11,8 @@ export const ADDRESSES = {
 };
 
 // ── Known Sepolia confidential token labels ──────────────────────────────────
+// Source: docs.zama.org/protocol/protocol-apps/addresses/testnet/sepolia.md
+// Keyed by confidential wrapper address (lowercase)
 export const TOKEN_LABELS: Record<
   string,
   { symbol: string; name: string; decimals: number }
@@ -35,7 +37,7 @@ export const TOKEN_LABELS: Record<
     name: "Confidential BRON (Mock)",
     decimals: 18,
   },
-  "0x2d628d2598af4eaf94cb76a437ff86ca78ffbfb": {
+  "0xf2d628d2598af4eaf94cb76a437ff86ca78ffbfb": {
     symbol: "cZAMA",
     name: "Confidential ZAMA (Mock)",
     decimals: 18,
@@ -45,18 +47,24 @@ export const TOKEN_LABELS: Record<
     name: "Confidential tGBP (Mock)",
     decimals: 18,
   },
-  "0xe4cf848739845bc81dee1d5352cf3844f0a60c7": {
+  "0xe4fcf848739845bc81dee1d5352cf3844f0a60c7": {
     symbol: "cXAUt",
     name: "Confidential XAUt (Mock)",
     decimals: 6,
   },
+  "0x167dc962808b32cfffc7e14b5018c0be06a3a208": {
+    symbol: "ctGBP-R",
+    name: "Confidential tGBP (Restricted)",
+    decimals: 18,
+  },
 };
 
+// Keyed by underlying ERC-20 address (lowercase)
 export const ERC20_LABELS: Record<
   string,
   { symbol: string; name: string; decimals: number }
 > = {
-  "0x9b5cd13b8efb858dc25a05cf411d8056058adfff": {
+  "0x9b5cd13b8efbb58dc25a05cf411d8056058adfff": {
     symbol: "USDC",
     name: "USD Coin (Mock)",
     decimals: 6,
@@ -86,7 +94,21 @@ export const ERC20_LABELS: Record<
     name: "tGBP (Mock)",
     decimals: 18,
   },
+  "0x24377ae4aa0c45ecee71225007f17c5d423dd940": {
+    symbol: "XAUt",
+    name: "Tether Gold (Mock)",
+    decimals: 6,
+  },
+  "0xf6ef9adb61a48e29e36bc873070a46a3d2667ff3": {
+    symbol: "tGBP-R",
+    name: "tGBP (Restricted)",
+    decimals: 18,
+  },
 };
+
+export const RESTRICTED_MINT_TOKENS = new Set([
+  "0xf6ef9adb61a48e29e36bc873070a46a3d2667ff3", // tGBP (Restricted)
+]);
 
 // ── ABIs ─────────────────────────────────────────────────────────────────────
 export const REGISTRY_ABI = [

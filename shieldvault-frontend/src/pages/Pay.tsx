@@ -242,10 +242,10 @@ export function PayPage() {
             What happens when you click pay
           </div>
           {[
-            ["Encrypt", "Zama SDK calls createEncryptedInput() — bound to the confidential token and the vault address"],
-            ["Proof", "SDK generates a ZK input proof that the encrypted value is valid"],
-            ["Submit", "Vault calls confidentialTransfer() with the encrypted handle + proof"],
-            ["On-chain", "Event logs show sender, recipient, and token — amount is never revealed"],
+            ["Select", "Choose a contributor and confidential token"],
+            ["Sign", "Wallet signs the transfer — SDK encrypts the amount internally"],
+            ["Submit", "confidentialTransfer() sends the encrypted amount on-chain"],
+            ["Hidden", "Only sender, recipient, and token are visible — never the amount"],
           ].map(([title, desc]) => (
             <div key={title} style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
               <span style={{

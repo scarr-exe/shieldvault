@@ -1,6 +1,7 @@
 import { useReadContract } from "wagmi";
 import { ADDRESSES, REGISTRY_ABI, ERC20_LABELS, TOKEN_LABELS } from "../config/contracts";
 import { Card, Badge, Addr, Spinner, Empty } from "../components/ui";
+import { RESTRICTED_MINT_TOKENS } from "../config/contracts";
 
 export function RegistryPage() {
   const { data: pairs, isLoading } = useReadContract({
@@ -9,7 +10,7 @@ export function RegistryPage() {
     functionName: "getTokenConfidentialTokenPairs",
   });
 
-  const valid   = pairs?.filter(p => p.isValid)  ?? [];
+  const valid = pairs?.filter(p => p.isValid) ?? [];
   const revoked = pairs?.filter(p => !p.isValid) ?? [];
 
   return (
@@ -36,9 +37,9 @@ export function RegistryPage() {
 
       {/* Stats */}
       <div style={{ display: "flex", gap: "12px", marginBottom: "24px" }}>
-        <StatPill label="Total"   value={pairs?.length ?? 0} color="var(--text-secondary)" />
-        <StatPill label="Valid"   value={valid.length}       color="var(--green)" />
-        <StatPill label="Revoked" value={revoked.length}     color="var(--red)" />
+        <StatPill label="Total" value={pairs?.length ?? 0} color="var(--text-secondary)" />
+        <StatPill label="Valid" value={valid.length} color="var(--green)" />
+        <StatPill label="Revoked" value={revoked.length} color="var(--red)" />
       </div>
 
       {isLoading ? (
@@ -66,8 +67,8 @@ export function RegistryPage() {
 
           {/* Rows — valid first */}
           {[...valid, ...revoked].map((pair, i) => {
-            const erc20Meta    = ERC20_LABELS[pair.tokenAddress.toLowerCase()];
-            const wrapperMeta  = TOKEN_LABELS[pair.confidentialTokenAddress.toLowerCase()];
+            const erc20Meta = ERC20_LABELS[pair.tokenAddress.toLowerCase()];
+            const wrapperMeta = TOKEN_LABELS[pair.confidentialTokenAddress.toLowerCase()];
             return (
               <div
                 key={pair.tokenAddress}
@@ -90,6 +91,9 @@ export function RegistryPage() {
                     <span style={{ fontWeight: 600, fontSize: "13px" }}>{erc20Meta?.symbol ?? "—"}</span>
                     {erc20Meta && <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>{erc20Meta.name}</span>}
                   </div>
+                  {RESTRICTED_MINT_TOKENS.has(pair.tokenAddress.toLowerCase()) && (
+                    <Badge variant="revoked">Restricted Mint</Badge>
+                  )}
                   <Addr address={pair.tokenAddress} />
                 </div>
 
