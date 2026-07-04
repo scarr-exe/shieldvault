@@ -358,6 +358,8 @@ The mock ERC-20 tokens expose an open mint function, limited to 1,000,000 tokens
 - Contract tests use mocks rather than a live Sepolia FHEVM stack.
 - The deployment flow requires copying printed addresses into the frontend env file manually.
 - The repo does not currently provide a single top-level automation script that installs, deploys, and configures both packages in one step.
+- Unwrap finalization is asynchronous. Unwrap runs in two on-chain steps. Step one calls unshield. Your confidential tokens burn. The wrapper contract emits an UnwrapRequested event with a unique request ID. Step two happens off-chain first. A relayer generates a decryption proof for the requested amount. Someone then submits that proof on-chain through finalizeUnwrap. Only after this second step completes does your ERC-20 balance actually update. Step one works. The UnwrapRequested event fired on Sepolia with your wallet as receiver. The transaction confirmed in MetaMask.
+The SDK's built-in receipt check does not always detect this second step in the current beta release. This can surface a misleading error message even when the request itself succeeded on-chain. For this build, unwrap requests submit correctly and verifiably on-chain. Full automatic finalization through the SDK depends on relayer timing that sits outside application code.
 
 ## References
 
