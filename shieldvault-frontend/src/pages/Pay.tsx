@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useReadContract, useWriteContract, useAccount, useWaitForTransactionReceipt } from "wagmi";
-import { parseUnits } from "viem";
+import { parseUnits, formatUnits } from "viem";
 import { ADDRESSES, VAULT_ABI, REGISTRY_ABI, TOKEN_LABELS, ERC20_LABELS } from "../config/contracts";
 import { Card, Button, Input, Badge, Addr, useToast, Spinner } from "../components/ui";
 import { useZamaSDK, sendConfidentialPayment } from "../hooks/useZamaSDK";
 import { useRefreshOnTx } from "../hooks/useRefreshOnTx";
+
 
 function cleanError(msg: string): string {
   if (msg.includes("User rejected") || msg.includes("user rejected")) return "Transaction cancelled";

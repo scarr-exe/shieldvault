@@ -40,17 +40,7 @@ export async function sendConfidentialPayment(
   amountBigInt: bigint,
 ): Promise<void> {
   const token = sdk.createToken(confidentialTokenAddress);
-  const tx = await token.confidentialTransfer(recipient, amountBigInt);
-
-  // Wait for receipt and check status
-  if (tx && typeof tx.wait === "function") {
-    const receipt = await tx.wait();
-    if (receipt?.status === 0) {
-      throw new Error(
-        "Transaction reverted — check your confidential token balance",
-      );
-    }
-  }
+  await token.confidentialTransfer(recipient, amountBigInt);
 }
 
 // Decrypts the caller's own balance for a confidential token.
