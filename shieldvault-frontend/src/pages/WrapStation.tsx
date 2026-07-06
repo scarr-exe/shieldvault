@@ -5,6 +5,7 @@ import { ADDRESSES, VAULT_ABI, REGISTRY_ABI, ERC20_LABELS, TOKEN_LABELS, ERC20_A
 import { Card, Button, Input, Badge, Addr, useToast } from "../components/ui";
 import { useRefreshOnTx } from "../hooks/useRefreshOnTx";
 import { RESTRICTED_MINT_TOKENS } from "../config/contracts";
+import { useZamaSDK } from "../hooks/useZamaSDK";
 
 function cleanError(msg: string): string {
   if (msg.includes("User rejected") || msg.includes("user rejected")) return "Transaction cancelled";
@@ -14,12 +15,13 @@ function cleanError(msg: string): string {
 }
 
 export function WrapStationPage() {
+  const sdk = useZamaSDK();
   const { address } = useAccount();
   const { show, ToastEl } = useToast();
 
   const [tokenInput, setTokenInput] = useState("");
   const [amount, setAmount] = useState("");
-  const [mode, setMode] = useState<"wrap" | "deposit">("deposit");
+  const [mode, setMode] = useState<"deposit" | "wrap" | "unwrap">("deposit");
 
   // Query registry for the entered token
   const isAddress = tokenInput.startsWith("0x") && tokenInput.length === 42;
@@ -67,7 +69,7 @@ export function WrapStationPage() {
   const [approving, setApproving] = useState(false);
   const [depositing, setDepositing] = useState(false);
   const [wrapping, setWrapping] = useState(false);
-
+  const [unwrapping, setUnwrapping] = useState(false);
   const parsedAmount = amount && tokenMeta
     ? parseUnits(amount, tokenMeta.decimals)
     : 0n;
@@ -123,6 +125,31 @@ export function WrapStationPage() {
     });
   };
 
+  const handleUnwrap = async () => {
+    if (!sdk || !wrapper) { show("Zama SDK not ready or wrapper not found", "error"); return; }
+
+    const MAX_UINT64 = BigInt("18446744073709551615");
+    if (parsedAmount > MAX_UINT64) {
+      const maxAmount = formatUnits(MAX_UINT64, tokenMeta?.decimals ?? 18);
+      show(`Max amount for this token is ${Number(maxAmount).toFixed(4)}`, "error");
+      return;
+    }
+
+    setUnwrapping(true);
+
+    try {
+      const token = sdk.createToken(wrapper);
+      await token.unshield(parsedAmount);
+
+      show("Unwrap submitted — tokens returning to public form", "success");
+      setUnwrapping(false);
+    } catch (e: any) {
+      console.error("UNWRAP ERROR:", e);
+      show(e.message?.slice(0, 100) || "Unwrap failed", "error");
+      setUnwrapping(false);
+    }
+  };
+
   // All registry pairs for quick select
   const { data: allPairs } = useReadContract({
     address: ADDRESSES.registry,
@@ -136,7 +163,7 @@ export function WrapStationPage() {
 
       {/* Mode toggle */}
       <div style={{ display: "flex", gap: "1px", background: "var(--border)", borderRadius: "var(--radius)", padding: "1px", marginBottom: "24px", width: "fit-content" }}>
-        {(["deposit", "wrap"] as const).map(m => (
+        {(["deposit", "wrap", "unwrap"] as const).map(m => (
           <button key={m} onClick={() => setMode(m)} style={{
             padding: "7px 20px", border: "none", borderRadius: "var(--radius)",
             background: mode === m ? "var(--bg-elevated)" : "transparent",
@@ -144,7 +171,7 @@ export function WrapStationPage() {
             fontFamily: "var(--font-display)", fontSize: "12px", fontWeight: mode === m ? 600 : 400,
             cursor: "pointer", textTransform: "capitalize", letterSpacing: "0.02em",
           }}>
-            {m === "deposit" ? "Deposit ERC-20" : "Wrap to Confidential"}
+            {m === "deposit" ? "Deposit ERC-20" : m === "wrap" ? "Wrap to Confidential" : "Unwrap to ERC-20"}
           </button>
         ))}
       </div>
@@ -209,7 +236,9 @@ export function WrapStationPage() {
                   ? `Wallet balance: ${formatUnits(userBalance as bigint, tokenMeta.decimals)} ${tokenMeta.symbol}`
                   : mode === "wrap" && vaultBalance !== undefined && tokenMeta
                     ? `Vault balance: ${formatUnits(vaultBalance as bigint, tokenMeta.decimals)} ${tokenMeta.symbol}`
-                    : undefined
+                    : mode === "unwrap" && tokenMeta
+                      ? `Unwraps c${tokenMeta.symbol} back to ${tokenMeta.symbol}`
+                      : undefined
               }
             />
 
@@ -255,7 +284,7 @@ export function WrapStationPage() {
                   {needsApproval ? "2. Deposit" : "Deposit to Vault"}
                 </Button>
               </div>
-            ) : (
+            ) : mode === "wrap" ? (
               <Button
                 variant="primary"
                 loading={wrapping}
@@ -264,6 +293,16 @@ export function WrapStationPage() {
                 style={{ width: "100%" }}
               >
                 Wrap → Confidential
+              </Button>
+            ) : (
+              <Button
+                variant="primary"
+                loading={unwrapping}
+                disabled={!amount || !isAddress || !isValid || !sdk}
+                onClick={handleUnwrap}
+                style={{ width: "100%" }}
+              >
+                Unwrap → ERC-20
               </Button>
             )}
           </div>

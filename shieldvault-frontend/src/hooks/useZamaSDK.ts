@@ -63,3 +63,19 @@ export async function decryptOwnBalance(
   const balance = await token.balanceOf(); // triggers userDecrypt internally
   return balance;
 }
+
+export async function unshieldAndWait(
+  sdk: ZamaSDK,
+  wrapperAddress: string,
+  amountBigInt: bigint,
+): Promise<void> {
+  const token = sdk.createToken(wrapperAddress);
+
+  // Step 1: request the unwrap
+  await token.unshield(amountBigInt);
+
+  // Step 2: the SDK should auto-finalize in the background.
+  // Some versions need a manual poll. If your balance doesn't
+  // update within a minute, the relayer may need more time,
+  // or a separate finalize call is required on this SDK version.
+}
